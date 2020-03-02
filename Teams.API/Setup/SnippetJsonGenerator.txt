@@ -1,0 +1,18 @@
+
+https://www.json-generator.com/
+
+[
+  '{{repeat(5)}}',
+  {
+    id: '{{guid()}}',
+    name: '{{company()}}',
+    members: [
+      '{{repeat(3)}}',
+      {
+        id: '{{guid()}}',
+        firstname: '{{firstName()}}',
+        lastname: '{{surname()}}'
+      }
+    ]
+  }
+]
