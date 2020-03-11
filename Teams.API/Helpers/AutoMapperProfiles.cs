@@ -22,8 +22,11 @@ namespace Teams.API.Helpers
                             .Aggregate((a, b) => $"{a}, {b}")));
 
             CreateMap<TeamForNew, Team>();
-
             CreateMap<TeamForList, TeamForUpdate>();
+
+            CreateMap<Member, MemberForList>()
+                .ForMember(dest => dest.fullname,
+                        opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"));
         }
     }
 }
