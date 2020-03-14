@@ -27,6 +27,8 @@ namespace Teams.API.Helpers
             CreateMap<Member, MemberForList>()
                 .ForMember(dest => dest.fullname,
                         opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"));
+
+            CreateMap<Member, MemberForDetail>();
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
@@ -27,19 +28,30 @@ namespace Teams.API.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async virtual Task<IActionResult> GetAllTeams()
         {
             // recuperar todos os times
             var teams = await _repository.GetTeams();
 
-            // mapear os times para o nosso DTO
-            var result = _mapper.Map<IEnumerable<TeamForList>>(teams);
+            if (teams == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                // mapear os times para o nosso DTO
+                var result = _mapper.Map<IEnumerable<TeamForList>>(teams);
 
-            // retornar o resultado
-            return this.Ok(result);
+                // retornar o resultado
+                return this.Ok(result);
+            }
         }
 
         [HttpGet("{id:guid}", Name = nameof(GetTeam))]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetTeam(Guid id)
         {
             // recuperar o time pelo id
@@ -61,13 +73,15 @@ namespace Teams.API.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.Created)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> Post(TeamForNew team)
         {
             // mapear o DTO para o modelo
             var teamMapped = _mapper.Map<Team>(team);
 
             // Se não foi passado um guid então criamos um
-            if (Guid.Empty.Equals(teamMapped))
+            if (Guid.Empty.Equals(teamMapped.Id))
             {
                 teamMapped.Id = Guid.NewGuid();
             }
@@ -84,11 +98,13 @@ namespace Teams.API.Controllers
             {
                 string errorMsg = "Failed adding team on server.";
                 _logger.LogError(errorMsg);
-                throw new Exception(errorMsg);
+                return this.NotFound(errorMsg);
             }
         }
 
         [HttpPut("{id:guid}")]
+        [ProducesResponseType((int)HttpStatusCode.Created)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> Put(Guid id, TeamForUpdate teamForUpdate)
         {
             var team = await _repository.GetTeam(id);
@@ -100,8 +116,8 @@ namespace Teams.API.Controllers
             }
             else
             {
-                // Atualiza o nome do time
-                team.Name = teamForUpdate.name;
+                // Atualiza o time
+                _mapper.Map(teamForUpdate, team);
 
                 // Salva o banco de dados
                 if (await _repository.SaveAll())
@@ -112,12 +128,14 @@ namespace Teams.API.Controllers
                 {
                     string errorMsg = "Failed updating team on server.";
                     _logger.LogError(errorMsg);
-                    throw new Exception(errorMsg);
+                    return this.NotFound(errorMsg);
                 }
             }
         }
 
         [HttpDelete("{id:guid}")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> Delete(Guid id)
         {
             var team = await _repository.GetTeam(id);
@@ -141,7 +159,7 @@ namespace Teams.API.Controllers
                 {
                     string errorMsg = "Failed deleting team on server";
                     _logger.LogError(errorMsg);
-                    throw new Exception(errorMsg);
+                    return this.NotFound(errorMsg);
                 }
             }
         }

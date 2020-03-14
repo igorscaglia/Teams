@@ -43,5 +43,20 @@ namespace Teams.API.Tests
 
             Assert.Equal(2, returnValue.Count());
         }
+
+        [Fact]
+        public async void QueryAllMembersListWithNonExistentTeam_ReturnsNotFound()
+        {
+            // 1A
+            MembersController controller = new MembersController(_memoryRepositoryHelper
+                .RepoWith5Teams(), _mapper, _logger);
+            Guid teamId = new Guid(FakeMemoryRepositoryHelper.NOT_IN_USE_1);
+
+            // 2A
+            var result = await controller.GetAllMembers(teamId);
+
+            // 3A
+            Assert.IsType<NotFoundResult>(result);
+        }
     }
 }
